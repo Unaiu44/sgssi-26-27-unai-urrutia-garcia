@@ -154,7 +154,7 @@ sudo chown $USER:$USER ~/ca.crt
 
 Ahora, desde tu ordenador:
 ```bash
-scp TU_USUARIO_MV@34.175.65.219:~/ca.crt .
+scp TU_USUARIO_MV@IP_EXTERNA:~/ca.crt .
 ```
 
 14. Importar la CA en Firefox y probar
