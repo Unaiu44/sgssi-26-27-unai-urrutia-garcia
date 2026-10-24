@@ -118,4 +118,15 @@ DATABASE = "mydb"
 Visitar `http://IP_EXTERNA_SERVIDOR_WEB/cgi-bin/index.py`. Deberían aparecer datos de la agenda.
 
 
+En principio, todos los pasos estan muy bien explicados y son sencillos de seguir, solo una observación. Puede ocurrir que te salga un fallo de que la tabla no existe. Eso seguramente sea porque como has creado un nuevo usuario, no tienes la tabla que esta en este git. Lo que debes de hacer es, simplemente la metes al VM de la forma que quieras y luego, cargalo con estos comandos:
 
+```bash
+sudo apt install default-mysql-client -y
+mysql -h IP_EXTERNA_BD -u admin -p mydb < ~/addressbook.sql
+```
+
+Si quieres comprobar que la tabla ya existe y ha ido todo bien: 
+
+```bash
+mysql -h IP_EXTERNA_BD -u admin -p mydb -e "SELECT * FROM address;"
+```

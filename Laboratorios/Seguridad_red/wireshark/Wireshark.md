@@ -37,3 +37,5 @@ ip -br a
 Abrir una web en el navegador, por ejemplo `https://phrack.org/issues/72/linenoise_md#article`. Parar la captura y filtrar por HTTP para buscar la primera peticion GET.
 
 > ¿Qué protocolos se usan? ¿Que bits del mensaje se corresponden con cada uno?
+
+Se usan 4 protocolos: Ethernet II (0-111), IPv4 (112-271), TCP (272-527) y HTTP (528-3415). 

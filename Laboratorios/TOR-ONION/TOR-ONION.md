@@ -55,6 +55,8 @@ Para acceder a sitios ONION hay que usar un navegador TOR. Descarga el [navegado
 
 > ¿Por qué crees que abundan los periódicos entre los sitios que ofrecen servicios ONION?
 
+Los medios ofrecen servicios onion para que sus lectores accedan sin que nadie sepa que leén, y para sortear la censura en países que bloquean sus webs. También permiten que fuentes y informantes contacten con la redacción de forma anónima.
+
 ## Servicio ONION en Google Cloud
 
 ### Instalar TOR
@@ -73,6 +75,8 @@ Debería devolver algo así:
 {"IsTor":true,"IP":"xxx.xxx.xxx.xxx"}
 ```
 
+Para realizar esta parte de la práctica, solo hay que seguir las ordenes del enunciado. Si el link no os funciona, probar con este: https://support.torproject.org/little-t-tor/getting-started/installing/ . Para hacer las comprobaciones, utiliza los comandos de esta parte de la práctica.
+
 ### Configurar servicio ONION
 
 Sigue las [instrucciones comunes](https://community.torproject.org/onion-services/setup/) para configurar el servicio ONION. Ten en cuenta que:
@@ -80,3 +84,117 @@ Sigue las [instrucciones comunes](https://community.torproject.org/onion-service
 - Apache debe estar funcionando y el firewall debe permitir conexiones. Conviene crear una página web nueva para verificar la conexión mediante ONION.
 - Hay que editar el archivo de configuración de TOR para añadir un nuevo Hidden Service.
 - Para comprobar la conexión ONION deberás usar la dirección ONION generada en el Hidden Service y el navegador TOR.
+
+Esta es la parte más dificil y extensa de la práctica. Para ello, debemos de suponer que ya hemos realizado exitosamente el anterior laboratorio donde configuramos una pagina web en Apache. Si es así, sigue los siguientes pasos:
+
+1. Crear página web de prueba en Apache
+
+Desde la maquina virtual ejecuta el siguiente comando: 
+
+```bash
+sudo nano /var/www/html/onion.html
+```
+
+Y una vez dentro, escribe lo que quieres que salga en la pagina web, por ejemplo:
+
+```html
+<h1>Mi servicio onion funciona</h1>
+<p>Si ves esto desde el Navegador Tor, la practica esta lista.</p>
+```
+
+Para comprobar que Apache la sirve, ejecuta:
+
+```bash
+curl http://localhost/onion.html
+```
+
+Si te aparece solo las líneas de la web, entonces es correcto, sino, es posible que no te funciones porque Apache en practicas anteriores hacia redirecciones de HTTP a HTTPS, y eso en esta práctica nos estorba. Por ello, sigue estos pasos:
+
+1.1 Hacer que Apache escuche en el puerto 8080:
+
+```bash
+sudo nano /etc/apache2/ports.conf
+```
+
+Aañdir al final del archivo: Listen 127.0.0.1:8080
+
+1.2 Crear el sitio para onion:
+
+```bash
+sudo nano /etc/apache2/sites-available/onion.conf
+```
+
+Y escribe dentro:
+
+```
+<VirtualHost 127.0.0.1:8080>
+    DocumentRoot /var/www/html
+    ErrorLog ${APACHE_LOG_DIR}/onion_error.log
+    CustomLog ${APACHE_LOG_DIR}/onion_access.log combined
+</VirtualHost>
+```
+
+1.3 Activar el sitio y recargar Apache
+
+```bash
+sudo a2ensite onion.conf
+sudo apache2ctl configtest
+sudo systemctl reload apache2
+```
+
+1.4 Probar que funciona:
+
+```bash
+curl http://127.0.0.1:8080/onion.html
+```
+
+Ahora que sabemos que funciona, seguimos.
+
+2. Decirle a Tor que cree el servicio onion:
+
+```bash
+sudo nano /etc/tor/torrc
+```
+
+Veras un archivo muy largo. TIenes que buscar dos lineas y quitarles el #. Las lineas son:
+
+```
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 127.0.0.1:80
+```
+
+Nota: Si creaste el puerto 8080, deberas de poner solo el segundo 80 a 8080. 
+
+3. Reiniciar tor y revisar estado:
+
+```bash
+sudo systemctl restart tor
+sudo systemctl status tor
+```
+
+Si todo es correcto, deberia aparecer 'active' en verde.
+
+4. Leer tu dirección onion:
+
+```bash
+sudo cat /var/lib/tor/hidden_service/hostname
+```
+
+Si todo es correcto, debería mostrar algo como: abcdefghijklmnopqrstuvwxyz234567abcdefghijklmnopqrstuvwx.onion
+
+5. Visitarla con el Navegador Tor:
+
+Para ello, descargala desde: https://www.torproject.org/download/
+
+Una vez descargada, deberas de buscar el archivo 'start-tor-browser.desktop'. Puedes ejecutarlo desde la terminal si te metes en la carpeta y pones:
+
+```bash
+./start-tor-browser.desktop
+```
+
+Te saldra una nueva pestaña y pulsa en 'Continuar'.
+
+Por último, pon en el navegador: http://TU_DIRECCION.onion/onion.html.
+
+La dirección la has sacado en el cuarto paso. Es posible que tarde un poco en conectar, pero si has hecho todo bien, te saldra la página web que creaste.
+
