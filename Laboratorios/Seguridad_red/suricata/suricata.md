@@ -71,6 +71,8 @@ sudo suricata-update
 
 > ¿Cuántas reglas se han descargado? (Pista: el propio comando lo indica al finalizar).
 
+69338 reglas.
+
 ## Ejecutar Suricata
 
 Lanzar Suricata en primer plano sobre la interfaz elegida, para ver los mensajes de arranque:
@@ -108,7 +110,15 @@ sudo apt install -y jq
 sudo tail -n 5 /var/log/suricata/eve.json | jq 'select(.event_type=="alert")'
 ```
 
-> ¿Qué campos aparecen en el evento de tipo `alert` del fichero `eve.json`? ¿Qué información aportan `signature`, `severity` y `src_ip`/`dest_ip` frente al mensaje de `fast.log`?
+> ¿Qué campos aparecen en el evento de tipo `alert` del fichero `eve.json`?
+
+Aparecen campos estructurados como timestamp, flow_id, in_iface, event_type, src_ip, src_port, dest_ip, dest_port, proto, y un objeto anidado alert que contiene action, gid, signature_id, rev, signature, category, severity, entre otros.
+
+> ¿Qué información aportan `signature`, `severity` y `src_ip`/`dest_ip` frente al mensaje de `fast.log`?
+
+  - signature: Nombre o descripción exacta de la regla que coincidió con el tráfico.
+  - severity: Nivel numérico de prioridad o criticidad del evento (útil para filtrado y triaje automático).
+  - src_ip / dest_ip: Identifican claramente el origen y destino del paquete. En eve.json esta información está separada en claves JSON nativas, facilitando la integración con herramientas como SIEM (Elasticsearch, Splunk), a diferencia del formato no estructurado de fast.log.
 
 Probar ahora con un escaneo de puertos, instalando `nmap` si no está disponible:
 
@@ -118,8 +128,14 @@ nmap -sS localhost
 ```
 
 > Vuelve a consultar `fast.log` y `eve.json`. ¿Ha generado alertas el escaneo? ¿Qué firma(s) han saltado?
+  
+  Si, se ven alertas relacionadas con el escaneo, com ET SCAN.
 
 > Cambia `HOME_NET` en `suricata.yaml` a un valor distinto (por ejemplo `[10.0.0.0/8]` en vez de `any`), reinicia Suricata (`sudo systemctl restart suricata`) y repite la prueba con `curl http://testmyids.com`. ¿Cambia el resultado? ¿Por qué `HOME_NET` afecta a qué tráfico se considera "entrante" o "saliente" en las reglas?
+
+Sí, la alerta puede no dispararse o cambiar el sentido de la firma.
+
+Las reglas de Suricata usan variables de dirección como $HOME_NET -> $EXTERNAL_NET o $EXTERNAL_NET -> $HOME_NET. Si la IP de tu máquina no está dentro del rango definido en HOME_NET, Suricata no clasificará ese tráfico como interno/protegido, haciendo que las condiciones lógicas de las reglas direccionadas no se cumplan y, por lo tanto, no se activen las alertas asociadas.
 
 ## Limpieza
 

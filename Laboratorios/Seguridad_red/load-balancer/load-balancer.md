@@ -114,12 +114,83 @@ Pulsar `Create`. La puesta en marcha del balanceador puede tardar varios minutos
 
 Visitar `http://IP_BALANCEADOR` (la IP `lb-ip`) y recargar la página varias veces (o ejecutar `for i in $(seq 1 20); do curl -s http://IP_BALANCEADOR; done`). Debería aparecer el nombre de las distintas instancias del grupo.
 
+
+```bash
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+```
+
 ## Probar la tolerancia a fallos
 
 1. Conectarse por SSH a una de las instancias y detener Apache: `sudo systemctl stop apache2`.
 2. Tras unos segundos la comprobación de salud marcará la instancia como no saludable (`Load balancing` > `lb-http` > `Backends`).
 3. Volver a visitar `http://IP_BALANCEADOR`: todas las respuestas proceden de la instancia restante.
+
+```bash
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+```
+
 4. Reiniciar Apache (`sudo systemctl start apache2`) y comprobar que la instancia vuelve a recibir tráfico.
+
+```bash
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-sw84</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+<h1>Servidor: lb-mig-9qk7</h1>
+```
 
 ## Limpieza
 

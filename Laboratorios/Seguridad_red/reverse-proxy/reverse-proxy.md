@@ -140,9 +140,56 @@ curl -I http://IP_EXTERNA_PROXY
 
    Deben aparecer las cabeceras `Via` y `X-Cache`. En la primera petición `X-Cache: MISS`, y en las siguientes `X-Cache: HIT`, lo que indica que el proxy responde sin consultar al backend.
 
+HTTP/1.1 200 OK
+
+Content-Length: 39
+
+Content-Type: text/html
+
+Date: Tue, 03 Nov 2026 15:57:15 GMT
+
+Server: Apache/2.4.66 (Ubuntu)
+
+Last-Modified: Tue, 03 Nov 2026 15:45:41 GMT
+
+ETag: "27-65f6127a66f0d"
+
+Accept-Ranges: bytes
+
+Age: 5
+
+Cache-Status: proxy-web;hit;detail=match
+
+Via: 1.1 proxy-web (squid/7.7)
+
+Connection: keep-alive
+
+
 2. Comprobar que el backend no es accesible directamente: no tiene IP externa, y `curl http://10.0.2.10` solo funciona desde `proxy-web`.
+
 3. Conectarse por SSH a `proxy-web` y consultar el registro de Squid: `sudo tail /var/log/squid/access.log`. Se verán las peticiones con `TCP_MISS` y `TCP_HIT`/`TCP_MEM_HIT`.
+
+1793721189.616      4 82.130.129.208 TCP_MISS/200 363 GET http://10.0.2.10/ - FIRSTUP_PARENT/10.0.2.10 text/html
+
+1793721189.759      1 82.130.129.208 TCP_MISS/404 569 GET http://10.0.2.10/favicon.ico - FIRSTUP_PARENT/10.0.2.10 text/html
+
+1793721435.273      3 82.130.129.208 TCP_REFRESH_UNMODIFIED/200 333 HEAD http://10.0.2.10/ - FIRSTUP_PARENT/10.0.2.10 text/html
+
+1793721440.388      0 82.130.129.208 TCP_MEM_HIT/200 333 HEAD http://10.0.2.10/ - HIER_NONE/- text/html
+
 4. Desde `proxy-web`, conectarse por SSH a `backend-web` (`ssh USUARIO@10.0.2.10`, con reenvío de agente `ssh -A`) y consultar `sudo tail /var/log/apache2/access.log`: solo aparece la IP del proxy (`10.0.1.x`) como cliente, y las peticiones en caché no llegan.
+
+10.0.1.2 - - [03/Nov/2026:15:52:38 +0000] "GET /squid-internal-dynamic/netdb HTTP/1.1" 404 528 "-" "-"
+
+10.0.1.2 - - [03/Nov/2026:15:53:09 +0000] "GET / HTTP/1.1" 200 322 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:158.0) Gecko/20100101 Firefox/158.0"
+
+10.0.1.2 - - [03/Nov/2026:15:53:09 +0000] "GET /squid-internal-periodic/store_digest HTTP/1.1" 404 528 "-" "-"
+
+10.0.1.2 - - [03/Nov/2026:15:53:09 +0000] "GET /favicon.ico HTTP/1.1" 404 527 "http://34.118.106.89/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:158.0) Gecko/20100101 Firefox/158.0"
+
+10.0.1.2 - - [03/Nov/2026:15:57:15 +0000] "HEAD / HTTP/1.1" 304 248 "-" "curl/8.5.0"
+
+10.0.1.2 - - [03/Nov/2026:15:58:09 +0000] "GET /squid-internal-periodic/store_digest HTTP/1.1" 404 528 "-" "-"
 
 ## Limpieza
 
